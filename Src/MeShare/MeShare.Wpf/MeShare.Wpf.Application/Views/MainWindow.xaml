@@ -1,0 +1,39 @@
+﻿<Window x:Class="MeShare.Wpf.Application.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:MeShare.Wpf.Application.Views"
+        xmlns:mvvm="http://prismlibrary.com/"
+        xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+        mc:Ignorable="d"
+        mvvm:ViewModelLocator.AutoWireViewModel="True"
+        Title="MeShare" Height="300" Width="300">
+    <Grid AllowDrop="True" Drop="UIElement_OnDrop">
+        <DataGrid CommandManager.PreviewExecuted="CommandManager_OnPreviewExecuted" SelectionMode="Single" AllowDrop="true" CanUserDeleteRows="True"  CanUserAddRows="False" ItemsSource="{Binding S3Objects}" SelectedItem="{Binding SelectedItem, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" AutoGenerateColumns="False">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="FileName" Width="*" Binding="{Binding FileName}" />
+                <DataGridTextColumn Header="Size" Width="*" Binding="{Binding FileSize}" />
+                <DataGridTextColumn Header="Status" Width="*" Binding="{Binding Status}" />
+                <DataGridTemplateColumn Header="Process" Width="*">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <ProgressBar Value="{Binding Process}" Minimum="0" Maximum="100"></ProgressBar>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+            <DataGrid.ContextMenu>
+                <ContextMenu >
+                    <MenuItem Header="Url" Command="{Binding OpenUrlCommand}" CommandParameter="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContextMenu}}, Path=PlacementTarget.SelectedItem}" />
+                    <MenuItem Header="Afbrud upload" Command="{Binding CancelUploadCommand}" CommandParameter="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContextMenu}}, Path=PlacementTarget.SelectedItem}" />
+                </ContextMenu>
+            </DataGrid.ContextMenu>
+            <i:Interaction.Triggers>
+                <i:EventTrigger EventName="MouseDoubleClick">
+                    <i:InvokeCommandAction Command="{Binding OpenUrlCommand}" CommandParameter="{Binding Path=SelectedItem, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=DataGrid}}"/>
+                </i:EventTrigger>
+            </i:Interaction.Triggers>
+        </DataGrid>
+    </Grid>
+</Window>
