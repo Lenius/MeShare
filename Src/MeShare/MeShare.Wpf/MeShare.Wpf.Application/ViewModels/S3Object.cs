@@ -15,10 +15,8 @@ namespace MeShare.Wpf.Application.ViewModels
 {
     public class S3Object : BindableBase,IDisposable
     {
-
         private BackgroundWorker bw;
         private string _fileName;
-        private string _uploaded;
         private string _fileSize;
         private int _process;
         private string _status;
@@ -32,7 +30,6 @@ namespace MeShare.Wpf.Application.ViewModels
             _client = new AmazonS3Client(Amazon.RegionEndpoint.EUWest1);
             bw = new BackgroundWorker();
             bw.DoWork += Bw_DoWork;
-            bw.RunWorkerCompleted += Bw_RunWorkerCompleted;
         }
 
         public string AwsBucket { get; set; }
@@ -45,11 +42,6 @@ namespace MeShare.Wpf.Application.ViewModels
                 _fileName = value;
                 RaisePropertyChanged();
             }
-        }
-
-        private void Bw_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
-        {
-            Status = _tokenSource.IsCancellationRequested ? "Stopped" : "Uploaded";
         }
 
         private void Bw_DoWork(object sender, DoWorkEventArgs e)
@@ -83,11 +75,9 @@ namespace MeShare.Wpf.Application.ViewModels
                         }
                     };
 
-
                 uploadRequest.UploadProgressEvent += new EventHandler<UploadProgressArgs>(uploadRequest_UploadPartProgressEvent);
 
 
-                //fileTransferUtility.Upload(uploadRequest);
                 fileTransferUtility.UploadAsync(uploadRequest, _tokenSource.Token);
             }
         }
@@ -95,6 +85,17 @@ namespace MeShare.Wpf.Application.ViewModels
         private void uploadRequest_UploadPartProgressEvent(object sender, UploadProgressArgs e)
         {
             Process = e.PercentDone;
+
+            if (_tokenSource.IsCancellationRequested)
+            {
+                Status = "Afbrudt";
+            }
+            else
+            {
+                Status = e.PercentDone == 100 ? "Uploaded" : "Uploading..";
+            }
+
+            
         }
 
         public int Process
@@ -135,7 +136,7 @@ namespace MeShare.Wpf.Application.ViewModels
             GetPreSignedUrlRequest requestOrg = new GetPreSignedUrlRequest
             {
                 BucketName = AwsBucket,
-                Key = string.Format("tmp/{0}", file.Name),
+                Key = $"tmp/{file.Name}",
                 Expires = DateTime.Now.AddMinutes(60)
             };
 
@@ -144,13 +145,14 @@ namespace MeShare.Wpf.Application.ViewModels
 
         public void CancelUpload()
         {
-            _tokenSource.Cancel();
+            _tokenSource.CancelAfter(TimeSpan.FromSeconds(1));
         }
 
         public void Dispose()
         {
-            _client.Dispose();
-            bw.Dispose();
+            _tokenSource?.Cancel();
+            _client?.Dispose();
+            bw?.Dispose();
         }
     }
 }

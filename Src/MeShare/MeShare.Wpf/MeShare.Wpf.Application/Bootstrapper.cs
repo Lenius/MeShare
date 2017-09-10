@@ -15,18 +15,5 @@ namespace MeShare.Wpf.Application
         {
             System.Windows.Application.Current.MainWindow.Show();
         }
-
-        protected override void ConfigureModuleCatalog()
-        {
-            base.ConfigureModuleCatalog();
-
-            //var moduleCatalog = (ModuleCatalog)this.ModuleCatalog;
-
-            //moduleCatalog.AddModule(typeof(UploadModule));
-
-
-            //Container.RegisterType(typeof(PaymentHandler), "PaymentHandler");
-
-        }
     }
 }

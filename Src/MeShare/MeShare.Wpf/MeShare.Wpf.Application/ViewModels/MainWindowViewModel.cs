@@ -1,12 +1,14 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Windows.Input;
 using System.Windows.Threading;
 using Prism.Commands;
 using Prism.Mvvm;
 
 namespace MeShare.Wpf.Application.ViewModels
 {
-    public class MainWindowViewModel : BindableBase
+    public class MainWindowViewModel : BindableBase, IDisposable
     {
         private S3Object _selectedItem;
         public DelegateCommand<S3Object> OpenUrlCommand { get; set; }
@@ -18,7 +20,7 @@ namespace MeShare.Wpf.Application.ViewModels
             S3Objects.CollectionChanged += S3Objects_CollectionChanged;
 
             OpenUrlCommand = new DelegateCommand<S3Object>(OpenUrl, CanOpenUrl).ObservesProperty(() => SelectedItem);
-            CancelUploadCommand = new DelegateCommand<S3Object>(CancelUpload, CanCancelUpload).ObservesProperty(() => SelectedItem.Process);
+            CancelUploadCommand = new DelegateCommand<S3Object>(CancelUpload, CanCancelUpload).ObservesProperty(() => SelectedItem);
         }
 
         private bool CanCancelUpload(S3Object arg)
@@ -77,6 +79,14 @@ namespace MeShare.Wpf.Application.ViewModels
             {
                 _selectedItem = value;
                 RaisePropertyChanged();
+            }
+        }
+
+        public void Dispose()
+        {
+            foreach (var viewModelS3Object in S3Objects)
+            {
+                viewModelS3Object.Dispose();
             }
         }
     }
